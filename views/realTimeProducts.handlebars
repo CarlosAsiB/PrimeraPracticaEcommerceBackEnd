@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time Products</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const socket = io();
+
+            socket.on('productAdded', function(product) {
+                const productList = document.getElementById('productList');
+                productList.innerHTML += `<li id="product-${product._id}">${product._id} - ${product.title} - ${product.description} - ${product.price}</li>`;
+            });
+
+            socket.on('productUpdated', function(products) {
+                const productList = document.getElementById('productList');
+                productList.innerHTML = '';
+                products.forEach(product => {
+                    productList.innerHTML += `<li id="product-${product._id}">${product._id} - ${product.title} - ${product.description} - ${product.price}</li>`;
+                });
+            });
+
+            socket.on('cartUpdated', function(cart) {
+                const cartList = document.getElementById('cartList');
+                const totalPrice = cart.products.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+                cartList.innerHTML = '';
+                cart.products.forEach(item => {
+                    cartList.innerHTML += `<li>${item.product.title} - Quantity: ${item.quantity} - Price: ${item.product.price}</li>`;
+                });
+                document.getElementById('totalPrice').innerText = `Total Price: ${totalPrice.toFixed(2)}`;
+            });
+
+            socket.on('deleteError', function(data) {
+                alert(`Error: ${data.error} - No product found with ID ${data.id}`);
+            });
+
+            document.getElementById('addProductForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const product = {};
+                formData.forEach((value, key) => {
+                    product[key] = value;
+                });
+                socket.emit('newProduct', product);
+                this.reset();
+            });
+
+            document.getElementById('deleteProductForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const productId = document.getElementById('productIdToDelete').value.trim();
+                socket.emit('deleteProduct', productId);
+                document.getElementById('productIdToDelete').value = '';
+            });
+
+            document.getElementById('addToCartForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const productId = document.getElementById('productIdToAdd').value.trim();
+                const quantity = parseInt(document.getElementById('quantityToAdd').value);
+                socket.emit('addToCart', { productId, quantity });
+                document.getElementById('productIdToAdd').value = '';
+                document.getElementById('quantityToAdd').value = '';
+            });
+
+            document.getElementById('buyCartButton').addEventListener('click', function() {
+                socket.emit('buyCart');
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Real-Time Products</h1>
+    <form id="addProductForm">
+        <input type="text" name="title" placeholder="Title" required>
+        <input type="text" name="description" placeholder="Description" required>
+        <input type="text" name="code" placeholder="Code" required>
+        <input type="number" name="price" placeholder="Price" required>
+        <input type="number" name="stock" placeholder="Stock" required>
+        <input type="text" name="category" placeholder="Category" required>
+        <input type="submit" value="Add Product">
+    </form>
+    <form id="deleteProductForm">
+        <input type="text" name="productIdToDelete" id="productIdToDelete" placeholder="Product ID to delete" required>
+        <input type="submit" value="Delete Product">
+    </form>
+    <form id="addToCartForm">
+        <input type="text" name="productIdToAdd" id="productIdToAdd" placeholder="Product ID to add" required>
+        <input type="number" name="quantityToAdd" id="quantityToAdd" placeholder="Quantity" required>
+        <input type="submit" value="Add to Cart">
+    </form>
+     <button id="buyCartButton" class="styled-button">Buy Cart</button>
+    <ul id="productList">
+        {{#each products}}
+            <li id="product-{{this._id}}">{{this._id}} - {{this.title}} - {{this.description}} - {{this.price}}</li>
+        {{/each}}
+    </ul>
+    <h2>Cart</h2>
+    <ul id="cartList"></ul>
+    <p id="totalPrice">Total Price: 0</p>
+</body>
+</html>
