@@ -1,15 +1,4 @@
-import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
-
-const cartSchema = new Schema({
-  products: [{
-    product: { type: Schema.Types.ObjectId, ref: 'Product' },
-    quantity: { type: Number, default: 1 }
-  }],
-  purchased: { type: Boolean, default: false }
-});
-
-const Cart = mongoose.model('Cart', cartSchema);
+import Cart from '../models/cartModel.js';
 
 class CartManager {
   async getOrCreateCart() {
@@ -22,8 +11,17 @@ class CartManager {
     return cart;
   }
 
+  async getCartById(cartId) {
+    return await Cart.findById(cartId).populate('products.product');
+  }
+
   async addProductToCart(cartId, productId, quantity = 1) {
-    const cart = await this.getOrCreateCart();
+    let cart;
+    if (cartId) {
+      cart = await this.getCartById(cartId);
+    } else {
+      cart = await this.getOrCreateCart();
+    }
     const productIndex = cart.products.findIndex(p => p.product._id.toString() === productId);
 
     if (productIndex !== -1) {
@@ -37,7 +35,7 @@ class CartManager {
   }
 
   async removeProductFromCart(cartId, productId) {
-    const cart = await this.getOrCreateCart();
+    const cart = await this.getCartById(cartId);
     const productIndex = cart.products.findIndex(p => p.product._id.toString() === productId);
 
     if (productIndex === -1) {
@@ -46,33 +44,18 @@ class CartManager {
 
     cart.products.splice(productIndex, 1);
     await cart.save();
-    return Cart.findById(cart._id).populate('products.product'); 
-  }
-
-  async purchaseCart() {
-    const cart = await this.getOrCreateCart();
-    cart.purchased = true;
-    await cart.save();
-    return cart;
-  }
-
-  async getCart() {
-    return this.getOrCreateCart();
-  }
-
-  async getCarts() {
-    return await Cart.find().populate('products.product');
+    return Cart.findById(cart._id).populate('products.product');
   }
 
   async updateCartProducts(cartId, products) {
-    const cart = await Cart.findById(cartId);
-    cart.products = products;
+    const cart = await this.getCartById(cartId);
+    cart.products = products.map(p => ({ product: p.productId, quantity: p.quantity }));
     await cart.save();
-    return Cart.findById(cartId).populate('products.product');
+    return Cart.findById(cart._id).populate('products.product');
   }
 
   async updateProductQuantityInCart(cartId, productId, quantity) {
-    const cart = await Cart.findById(cartId);
+    const cart = await this.getCartById(cartId);
     const productIndex = cart.products.findIndex(p => p.product._id.toString() === productId);
 
     if (productIndex === -1) {
@@ -81,7 +64,22 @@ class CartManager {
 
     cart.products[productIndex].quantity = quantity;
     await cart.save();
-    return Cart.findById(cartId).populate('products.product');
+    return Cart.findById(cart._id).populate('products.product');
+  }
+
+  async deleteCart(cartId) {
+    return await Cart.findByIdAndDelete(cartId);
+  }
+
+  async getCarts() {
+    return await Cart.find().populate('products.product');
+  }
+
+  async purchaseCart(cartId) {
+    const cart = await this.getCartById(cartId);
+    cart.purchased = true;
+    await cart.save();
+    return cart;
   }
 }
 

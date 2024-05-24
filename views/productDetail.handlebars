@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{product.title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>{{product.title}}</h1>
+  <p>{{product.description}}</p>
+  <p>Price: {{product.price}}</p>
+  <p>Stock: {{product.stock}}</p>
+  <p>Category: {{product.category}}</p>
+  <button id="addToCartButton">Add to Cart</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    document.getElementById('addToCartButton').addEventListener('click', function() {
+      const socket = io();
+      socket.emit('addToCart', { productId: '{{product._id}}', quantity: 1 });
+      alert('Product added to cart!');
+    });
+  </script>
+</body>
+</html>

@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Ruta GET con parámetros para paginación, búsqueda y ordenamiento
+// Ruta para obtener productos con paginación, búsqueda y ordenamiento
 router.get('/api/products', async (req, res) => {
   try {
     const { limit = 10, page = 1, sort, query } = req.query;
@@ -116,6 +116,20 @@ router.get('/products', async (req, res) => {
     });
   } catch (error) {
     res.status(500).send('Error al recuperar los productos');
+  }
+});
+
+// Ruta para obtener los detalles de un producto específico
+router.get('/products/:id', async (req, res) => {
+  try {
+    const product = await productDao.getProductById(req.params.id);
+    if (!product) {
+      return res.status(404).send('Producto no encontrado');
+    }
+    res.render('productDetail', { product });
+  } catch (error) {
+    console.error('Error al recuperar el producto:', error);
+    res.status(500).send('Error al recuperar el producto');
   }
 });
 

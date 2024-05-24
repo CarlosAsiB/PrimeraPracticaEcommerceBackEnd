@@ -32,48 +32,52 @@ router.delete('/api/carts/:id', async (req, res) => {
   }
 });
 
-// Eliminar un producto específico del carrito
-router.delete('/api/carts/:cid/products/:pid', async (req, res) => {
+router.get('/carts/:id', async (req, res) => {
   try {
-    const { cid, pid } = req.params;
-    const updatedCart = await cartDao.removeProductFromCart(cid, pid);
-    res.status(200).json(updatedCart);
-  } catch (error) {
-    res.status(404).json({ error: 'Error al eliminar el producto del carrito' });
-  }
-});
-
-// Actualizar un carrito con un arreglo de productos
-router.put('/api/carts/:cid', async (req, res) => {
-  try {
-    const { cid } = req.params;
-    const updatedCart = await cartDao.updateCartProducts(cid, req.body.products);
-    res.status(200).json(updatedCart);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar el carrito' });
-  }
-});
-
-// Actualizar la cantidad de un producto en el carrito
-router.put('/api/carts/:cid/products/:pid', async (req, res) => {
-  try {
-    const { cid, pid } = req.params;
-    const { quantity } = req.body;
-    const updatedCart = await cartDao.updateProductQuantityInCart(cid, pid, quantity);
-    res.status(200).json(updatedCart);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar la cantidad del producto en el carrito' });
-  }
-});
-
-// Ruta para renderizar un carrito específico
-router.get('/carts/:cid', async (req, res) => {
-  try {
-    const { cid } = req.params;
-    const cart = await cartDao.getCartById(cid);
-    res.render('cart', { cart });
+    const cart = await cartDao.getCartById(req.params.id);
+    if (!cart) {
+      return res.status(404).send('Carrito no encontrado');
+    }
+    res.render('cartDetail', { cart });
   } catch (error) {
     res.status(500).send('Error al recuperar el carrito');
+  }
+});
+
+// Rutas adicionales para la API del carrito
+router.put('/api/carts/:id', async (req, res) => {
+  try {
+    const updatedCart = await cartDao.updateCartProducts(req.params.id, req.body.products);
+    res.status(200).json(updatedCart);
+  } catch (error) {
+    res.status(404).json({ error: 'Carrito no encontrado' });
+  }
+});
+
+router.put('/api/carts/:id/products/:pid', async (req, res) => {
+  try {
+    const updatedCart = await cartDao.updateProductQuantityInCart(req.params.id, req.params.pid, req.body.quantity);
+    res.status(200).json(updatedCart);
+  } catch (error) {
+    res.status(404).json({ error: 'Carrito o producto no encontrado' });
+  }
+});
+
+router.delete('/api/carts/:id/products/:pid', async (req, res) => {
+  try {
+    const updatedCart = await cartDao.removeProductFromCart(req.params.id, req.params.pid);
+    res.status(200).json(updatedCart);
+  } catch (error) {
+    res.status(404).json({ error: 'Carrito o producto no encontrado' });
+  }
+});
+
+router.delete('/api/carts/:id/products', async (req, res) => {
+  try {
+    const updatedCart = await cartDao.clearCart(req.params.id);
+    res.status(200).json(updatedCart);
+  } catch (error) {
+    res.status(404).json({ error: 'Carrito no encontrado' });
   }
 });
 
