@@ -88,7 +88,7 @@
         <input type="number" name="quantityToAdd" id="quantityToAdd" placeholder="Quantity" required>
         <input type="submit" value="Add to Cart">
     </form>
-     <button id="buyCartButton" class="styled-button">Buy Cart</button>
+    <button id="buyCartButton" class="styled-button">Buy Cart</button>
     <ul id="productList">
         {{#each products}}
             <li id="product-{{this._id}}">{{this._id}} - {{this.title}} - {{this.description}} - {{this.price}}</li>

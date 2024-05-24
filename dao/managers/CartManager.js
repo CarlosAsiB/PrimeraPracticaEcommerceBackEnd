@@ -59,6 +59,30 @@ class CartManager {
   async getCart() {
     return this.getOrCreateCart();
   }
+
+  async getCarts() {
+    return await Cart.find().populate('products.product');
+  }
+
+  async updateCartProducts(cartId, products) {
+    const cart = await Cart.findById(cartId);
+    cart.products = products;
+    await cart.save();
+    return Cart.findById(cartId).populate('products.product');
+  }
+
+  async updateProductQuantityInCart(cartId, productId, quantity) {
+    const cart = await Cart.findById(cartId);
+    const productIndex = cart.products.findIndex(p => p.product._id.toString() === productId);
+
+    if (productIndex === -1) {
+      throw new Error('Product not found in cart');
+    }
+
+    cart.products[productIndex].quantity = quantity;
+    await cart.save();
+    return Cart.findById(cartId).populate('products.product');
+  }
 }
 
 export default CartManager;

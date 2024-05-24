@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Carrito</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1>Carrito</h1>
+    <ul>
+        {{#each cart.products}}
+            <li>{{this.product.title}} - {{this.quantity}}</li>
+        {{/each}}
+    </ul>
+    <button onclick="purchaseCart()">Comprar</button>
+    <script>
+        function purchaseCart() {
+            fetch(`/api/carts/${cartId}/purchase`, {
+                method: 'PUT'
+            }).then(response => response.json())
+              .then(data => alert('Carrito comprado'));
+        }
+    </script>
+</body>
+</html>
