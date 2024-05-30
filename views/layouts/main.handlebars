@@ -15,6 +15,14 @@
                 <li><a href="/chat">Chat</a></li>
             </ul>
         </nav>
+        {{#if user}}
+            <div class="user-info">
+                <p>Bienvenido, {{user.username}} ({{user.role}})</p>
+                <form action="/logout" method="POST">
+                    <button type="submit">Logout</button>
+                </form>
+            </div>
+        {{/if}}
     </header>
 
     {{{body}}}

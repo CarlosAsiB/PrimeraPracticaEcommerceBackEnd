@@ -7,14 +7,16 @@ import dotenv from 'dotenv';
 import { allowInsecurePrototypeAccess } from '@handlebars/allow-prototype-access';
 import Handlebars from 'handlebars';
 import productRoutes from './routes/productRoutes.js';
+import productViewRoutes from './routes/productViewRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import requireAuth from './middleware/requireAuth.js'; 
 import MessageManager from './dao/managers/MessageManager.js';
 import CartManager from './dao/managers/CartManager.js';
 import ProductManager from './dao/managers/ProductManager.js';
 
-// Cargar variables de entorno
-dotenv.config();
+dotenv.config(); // Cargar variables de entorno
 
 const app = express();
 const httpServer = createServer(app);
@@ -43,12 +45,17 @@ app.set('views', './views');
 
 // Middleware para analizar JSON y servir archivos estáticos
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 
-// Usar rutas
-app.use('/', productRoutes);
-app.use('/', cartRoutes);
-app.use('/', chatRoutes);
+// Usar rutas de autenticación
+app.use(authRoutes);
+
+// Usar rutas protegidas con el middleware de autenticación
+app.use('/', requireAuth, productViewRoutes);
+app.use('/api', requireAuth, productRoutes);
+app.use('/', requireAuth, cartRoutes);
+app.use('/', requireAuth, chatRoutes);
 
 // Configuración de la conexión Socket.io
 io.on('connection', async (socket) => {

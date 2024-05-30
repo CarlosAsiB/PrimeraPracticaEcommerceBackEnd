@@ -88,37 +88,6 @@ router.delete('/api/products/:id', async (req, res) => {
   }
 });
 
-// Ruta para visualizar productos con paginación
-router.get('/products', async (req, res) => {
-  try {
-    const { limit = 10, page = 1, sort, query } = req.query;
-    const filters = query ? { $text: { $search: query } } : {};
-    const options = {
-      limit: parseInt(limit),
-      skip: (parseInt(page) - 1) * parseInt(limit),
-      sort: sort ? { price: sort === 'asc' ? 1 : -1 } : {}
-    };
-
-    const products = await productDao.getProducts(filters, options);
-    const totalProducts = await productDao.countProducts(filters);
-    const totalPages = Math.ceil(totalProducts / options.limit);
-
-    res.render('products', {
-      products,
-      totalPages,
-      prevPage: page > 1 ? page - 1 : null,
-      nextPage: page < totalPages ? parseInt(page) + 1 : null,
-      page: parseInt(page),
-      hasPrevPage: page > 1,
-      hasNextPage: page < totalPages,
-      prevLink: page > 1 ? `/products?limit=${limit}&page=${page - 1}&sort=${sort}&query=${query}` : null,
-      nextLink: page < totalPages ? `/products?limit=${limit}&page=${parseInt(page) + 1}&sort=${sort}&query=${query}` : null
-    });
-  } catch (error) {
-    res.status(500).send('Error al recuperar los productos');
-  }
-});
-
 // Ruta para obtener los detalles de un producto específico
 router.get('/products/:id', async (req, res) => {
   try {

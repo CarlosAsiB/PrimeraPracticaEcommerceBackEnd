@@ -1,12 +1,12 @@
-/* Reset default browser styles */
+/* Reiniciar estilos predeterminados del navegador */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Roboto', sans-serif; /* Use Google Fonts for a more stylish appearance */
+    font-family: 'Roboto', sans-serif; /* Utilizar Google Fonts para una apariencia más elegante */
 }
 
-/* Overall body styling */
+/* Estilos generales del cuerpo */
 body {
     line-height: 1.6;
     padding: 20px;
@@ -14,16 +14,47 @@ body {
     color: #4e342e;
 }
 
-/* Header styling */
+/* Estilos del encabezado */
 header {
     background: #6d4c41;
     color: #fff;
     padding: 20px;
     text-align: center;
     font-size: 1.5rem;
+    position: relative;
 }
 
-/* Navigation styling */
+header .user-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+header .user-info p {
+    margin: 0;
+}
+
+header .user-info form {
+    display: inline;
+    margin-left: 10px;
+}
+
+header .user-info button {
+    background-color: #854141;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+header .user-info button:hover {
+    background-color: #5d4037;
+}
+
+/* Estilos de navegación */
 nav ul {
     list-style: none;
     display: flex;
@@ -36,31 +67,31 @@ nav ul li {
 }
 
 nav ul li a {
-    color: #854141; /* Updated link color */
+    color: #854141; /* Color de enlace actualizado */
     text-decoration: none;
     font-weight: bold;
     font-size: 1.2rem;
 }
 
-/* Footer styling */
+/* Estilos del pie de página */
 footer {
     text-align: center;
     padding: 20px 0;
     background-color: #6d4c41;
     color: #fff;
-    position: relative; /* Changed from fixed to relative */
-    margin-top: 40px; /* Ensure footer doesn't overlap content */
+    position: relative; /* Cambiado de fijo a relativo */
+    margin-top: 40px; /* Asegurar que el pie de página no se superponga al contenido */
     width: 100%;
 }
 
-/* General heading styling */
+/* Estilos generales de encabezado */
 h1, h2, h3, h4, h5, h6 {
     color: #4e342e;
     margin-bottom: 15px;
     text-align: center;
 }
 
-/* List styling */
+/* Estilos de lista */
 ul {
     list-style-type: none;
     padding: 5px;
@@ -79,7 +110,7 @@ li:hover {
     background-color: #ffe0b2;
 }
 
-/* Form styling */
+/* Estilos de formulario */
 form {
     margin-bottom: 20px;
     background: #fafafa;
@@ -88,7 +119,7 @@ form {
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-input[type="text"], input[type="number"], input[type="submit"], button.styled-button {
+input[type="text"], input[type="password"], input[type="number"], input[type="submit"], button.styled-button {
     display: block;
     margin: 10px 0;
     padding: 10px;
@@ -107,7 +138,28 @@ input[type="submit"], button.styled-button {
 input[type="submit"]:hover, button.styled-button:hover {
     background-color: #5d4037;
 }
-/* Responsive design for smaller screens */
+
+/* Estilos específicos para la página de login */
+.login-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.login-container h1 {
+    margin-bottom: 20px;
+}
+
+.login-container form {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Diseño receptivo para pantallas más pequeñas */
 @media (max-width: 768px) {
     nav ul {
         flex-direction: column;
@@ -115,5 +167,15 @@ input[type="submit"]:hover, button.styled-button:hover {
 
     nav ul li {
         margin: 10px;
+    }
+
+    header .user-info {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    header .user-info form {
+        margin-left: 0;
+        margin-top: 10px;
     }
 }
