@@ -1,5 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
+import passport from '../config/passportconfig.js';
 import User from '../dao/models/userModel.js';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
@@ -16,6 +17,9 @@ router.use(session({
   saveUninitialized: false,
   store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }) // Usar mongoUrl desde .env
 }));
+
+router.use(passport.initialize());
+router.use(passport.session());
 
 // Ruta de registro
 router.get('/register', (req, res) => {
@@ -35,34 +39,26 @@ router.get('/login', (req, res) => {
   res.render('login');
 });
 
-router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+router.post('/login', passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/login'
+}));
 
-  // Verificar si es el usuario administrador
-  if (username === 'adminCoder@coder.com' && password === 'adminCod3r123') {
-    req.session.userId = 'admin';
-    req.session.user = { username: 'adminCoder@coder.com', role: 'admin' }; // Guardar datos del admin en la sesión
-    return res.redirect('/');
-  }
+// Rutas de autenticación con GitHub
+router.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
 
-  // Verificar usuarios de la base de datos
-  const user = await User.findOne({ username });
-  if (user && await bcrypt.compare(password, user.password)) {
-    req.session.userId = user._id;
-    req.session.user = { username: user.username, role: user.role }; // Guardar usuario y rol en la sesión
-    return res.redirect('/');
-  } else {
-    return res.redirect('/login');
-  }
+router.get('/api/sessions/githubcallback', passport.authenticate('github', {
+  failureRedirect: '/login'
+}), (req, res) => {
+  res.redirect('/');
 });
 
 // Ruta de logout
 router.post('/logout', (req, res) => {
-  req.session.destroy(err => {
+  req.logout(err => {
     if (err) {
-      return res.redirect('/');
+      return next(err);
     }
-    res.clearCookie('sid');
     res.redirect('/login');
   });
 });

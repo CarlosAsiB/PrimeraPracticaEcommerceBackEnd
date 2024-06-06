@@ -11,10 +11,11 @@ import productViewRoutes from './routes/productViewRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-import requireAuth from './middleware/requireAuth.js'; 
+import requireAuth from './middleware/requireAuth.js'; // Middleware de autenticación
 import MessageManager from './dao/managers/MessageManager.js';
 import CartManager from './dao/managers/CartManager.js';
 import ProductManager from './dao/managers/ProductManager.js';
+import passport from './config/passportconfig.js'; // Importar passport
 
 dotenv.config(); // Cargar variables de entorno
 
