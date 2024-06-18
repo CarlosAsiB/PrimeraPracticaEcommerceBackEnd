@@ -6,18 +6,22 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { allowInsecurePrototypeAccess } from '@handlebars/allow-prototype-access';
 import Handlebars from 'handlebars';
+import cookieParser from 'cookie-parser'; // Importar cookie-parser
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
+import flash from 'connect-flash';
 import productRoutes from './routes/productRoutes.js';
 import productViewRoutes from './routes/productViewRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-import requireAuth from './middleware/requireAuth.js'; // Middleware de autenticación
+import requireAuth from './middleware/requireAuth.js';
 import MessageManager from './dao/managers/MessageManager.js';
 import CartManager from './dao/managers/CartManager.js';
 import ProductManager from './dao/managers/ProductManager.js';
-import passport from './config/passportconfig.js'; // Importar passport
+import passport from './config/passportconfig.js';
 
-dotenv.config(); // Cargar variables de entorno
+dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
@@ -48,6 +52,21 @@ app.set('views', './views');
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
+app.use(cookieParser()); // Usar cookie-parser
+
+// Configurar la sesión
+app.use(session({
+  secret: 'your_secret_key',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }) // Usar mongoUrl desde .env
+}));
+
+app.use(flash()); // Usar connect-flash
+
+// Configurar Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Usar rutas de autenticación
 app.use(authRoutes);

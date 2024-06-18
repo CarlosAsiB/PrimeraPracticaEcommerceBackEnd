@@ -2,65 +2,57 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import passport from '../config/passportconfig.js';
 import User from '../dao/models/userModel.js';
-import session from 'express-session';
-import MongoStore from 'connect-mongo';
+import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import currentUser from '../middleware/currentUser.js'; // Importar currentUser middleware
 
-dotenv.config(); // Cargar variables de entorno
+dotenv.config();
 
 const router = express.Router();
 
-// Configurar la sesión
-router.use(session({
-  secret: 'your_secret_key',
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }) // Usar mongoUrl desde .env
-}));
-
-router.use(passport.initialize());
-router.use(passport.session());
-
-// Ruta de registro
-router.get('/register', (req, res) => {
-  res.render('register');
-});
-
 router.post('/register', async (req, res) => {
-  const { username, password } = req.body;
+  const { first_name, last_name, email, age, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = new User({ username, password: hashedPassword });
+  const newUser = new User({ first_name, last_name, email, age, password: hashedPassword });
   await newUser.save();
   res.redirect('/login');
 });
 
-// Ruta de login
-router.get('/login', (req, res) => {
-  res.render('login');
+router.post('/login', (req, res, next) => {
+  passport.authenticate('local', { session: false }, (err, user, info) => {
+    if (err || !user) {
+      return res.status(400).json({
+        message: 'Something is not right',
+        user: user
+      });
+    }
+    req.login(user, { session: false }, (err) => {
+      if (err) {
+        res.send(err);
+      }
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+      res.cookie('jwt', token, { httpOnly: true });
+      return res.json({ user, token });
+    });
+  })(req, res, next);
 });
 
-router.post('/login', passport.authenticate('local', {
-  successRedirect: '/',
-  failureRedirect: '/login'
-}));
-
-// Rutas de autenticación con GitHub
 router.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
 
-router.get('/api/sessions/githubcallback', passport.authenticate('github', {
-  failureRedirect: '/login'
-}), (req, res) => {
+router.get('/api/sessions/githubcallback', passport.authenticate('github', { session: false }), (req, res) => {
+  const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
+  res.cookie('jwt', token, { httpOnly: true });
   res.redirect('/');
 });
 
-// Ruta de logout
+router.get('/current', currentUser, (req, res) => {
+  res.json({ user: req.user });
+});
+
 router.post('/logout', (req, res) => {
-  req.logout(err => {
-    if (err) {
-      return next(err);
-    }
-    res.redirect('/login');
-  });
+  res.clearCookie('jwt');
+  req.logout();
+  res.redirect('/login');
 });
 
 export default router;
