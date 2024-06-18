@@ -10,7 +10,7 @@ dotenv.config();
 
 const jwtOptions = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.JWT_SECRET // Asegurarse de que esta línea esté configurada correctamente
+  secretOrKey: process.env.JWT_SECRET
 };
 
 passport.use(new LocalStrategy({

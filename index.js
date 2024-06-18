@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { allowInsecurePrototypeAccess } from '@handlebars/allow-prototype-access';
 import Handlebars from 'handlebars';
-import cookieParser from 'cookie-parser'; // Importar cookie-parser
+import cookieParser from 'cookie-parser'; 
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import flash from 'connect-flash';
