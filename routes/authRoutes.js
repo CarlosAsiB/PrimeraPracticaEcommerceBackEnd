@@ -4,7 +4,7 @@ import passport from '../config/passportconfig.js';
 import User from '../dao/models/userModel.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import currentUser from '../middleware/currentUser.js';
+import currentUser from '../middleware/currentUser.js'; // Importar currentUser middleware
 
 dotenv.config();
 
