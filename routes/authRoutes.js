@@ -1,58 +1,28 @@
 import express from 'express';
-import bcrypt from 'bcryptjs';
+import { register, login, githubCallback, current, logout } from '../controllers/authController.js';
 import passport from '../config/passportconfig.js';
-import User from '../dao/models/userModel.js';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-import currentUser from '../middleware/currentUser.js'; // Importar currentUser middleware
-
-dotenv.config();
+import currentUser from '../middleware/currentUser.js';
 
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
-  const { first_name, last_name, email, age, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = new User({ first_name, last_name, email, age, password: hashedPassword });
-  await newUser.save();
-  res.redirect('/login');
+router.get('/register', (req, res) => {
+  res.render('register');
 });
 
-router.post('/login', (req, res, next) => {
-  passport.authenticate('local', { session: false }, (err, user, info) => {
-    if (err || !user) {
-      return res.status(400).json({
-        message: 'Something is not right',
-        user: user
-      });
-    }
-    req.login(user, { session: false }, (err) => {
-      if (err) {
-        res.send(err);
-      }
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-      res.cookie('jwt', token, { httpOnly: true });
-      return res.json({ user, token });
-    });
-  })(req, res, next);
+router.post('/register', register);
+
+router.get('/login', (req, res) => {
+  res.render('login');
 });
+
+router.post('/login', login);
 
 router.get('/auth/github', passport.authenticate('github', { scope: ['user:email'] }));
 
-router.get('/api/sessions/githubcallback', passport.authenticate('github', { session: false }), (req, res) => {
-  const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
-  res.cookie('jwt', token, { httpOnly: true });
-  res.redirect('/');
-});
+router.get('/api/sessions/githubcallback', passport.authenticate('github', { session: false }), githubCallback);
 
-router.get('/current', currentUser, (req, res) => {
-  res.json({ user: req.user });
-});
+router.get('/current', currentUser, current);
 
-router.post('/logout', (req, res) => {
-  res.clearCookie('jwt');
-  req.logout();
-  res.redirect('/login');
-});
+router.post('/logout', logout);
 
 export default router;
