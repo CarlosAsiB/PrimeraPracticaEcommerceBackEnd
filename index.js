@@ -53,30 +53,30 @@ app.set('views', './views');
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
-app.use(cookieParser()); // Usar cookie-parser
+app.use(cookieParser());
 
 // Configurar la sesión
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your_secret_key',
+  secret: 'your_secret_key',
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }) // Usar mongoUrl desde .env
+  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI })
 }));
 
-app.use(flash()); // Usar connect-flash
+app.use(flash());
 
 // Configurar Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
 // Usar rutas de autenticación
-app.use('/auth', authRoutes);
+app.use(authRoutes);
 
 // Usar rutas protegidas con el middleware de autenticación
 app.use('/', requireAuth, productViewRoutes);
-app.use('/api/products', requireAuth, productRoutes);
-app.use('/api/carts', requireAuth, cartRoutes);
-app.use('/chat', requireAuth, chatRoutes);
+app.use('/api', requireAuth, productRoutes);
+app.use('/', requireAuth, cartRoutes);
+app.use('/', requireAuth, chatRoutes);
 
 // Configuración de la conexión Socket.io
 io.on('connection', async (socket) => {
