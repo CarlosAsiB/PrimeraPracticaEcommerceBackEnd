@@ -1,3 +1,4 @@
+// index.js
 import express from 'express';
 import { createServer } from 'http';
 import { engine } from 'express-handlebars';
@@ -56,7 +57,7 @@ app.use(cookieParser()); // Usar cookie-parser
 
 // Configurar la sesión
 app.use(session({
-  secret: 'your_secret_key',
+  secret: process.env.SESSION_SECRET || 'your_secret_key',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }) // Usar mongoUrl desde .env
@@ -69,13 +70,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Usar rutas de autenticación
-app.use(authRoutes);
+app.use('/auth', authRoutes);
 
 // Usar rutas protegidas con el middleware de autenticación
 app.use('/', requireAuth, productViewRoutes);
-app.use('/api', requireAuth, productRoutes);
-app.use('/', requireAuth, cartRoutes);
-app.use('/', requireAuth, chatRoutes);
+app.use('/api/products', requireAuth, productRoutes);
+app.use('/api/carts', requireAuth, cartRoutes);
+app.use('/chat', requireAuth, chatRoutes);
 
 // Configuración de la conexión Socket.io
 io.on('connection', async (socket) => {

@@ -82,12 +82,13 @@ export const clearCart = async (req, res) => {
 
 export const purchaseCart = async (req, res) => {
   try {
-    const cartId = req.params.cid;
+    const cartId = req.params.id;
     const cart = await cartDao.getCartById(cartId);
     if (!cart) return res.status(404).send('Carrito no encontrado');
 
     let totalAmount = 0;
     const productsOutOfStock = [];
+
     for (const item of cart.products) {
       const product = await productDao.getProductById(item.product._id);
       if (product.stock >= item.quantity) {
@@ -106,6 +107,9 @@ export const purchaseCart = async (req, res) => {
     });
 
     await ticket.save();
+
+    cart.purchased = true;
+    await cart.save();
 
     res.status(201).json({ ticket, productsOutOfStock });
   } catch (error) {

@@ -31,7 +31,7 @@ class CartManager {
     }
 
     await cart.save();
-    return Cart.findById(cart._id).populate('products.product'); // Ensure the product details are populated
+    return Cart.findById(cart._id).populate('products.product');
   }
 
   async removeProductFromCart(cartId, productId) {
