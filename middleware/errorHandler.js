@@ -1,5 +1,10 @@
+import CustomError from '../utils/CustomError.js';
+
 export const errorHandler = (err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Algo salió mal!');
-  };
-  
+  if (err instanceof CustomError) {
+    return res.status(err.statusCode).json({ error: err.message });
+  }
+
+  console.error(err);
+  res.status(500).json({ error: 'Something went wrong' });
+};

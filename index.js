@@ -1,4 +1,3 @@
-// index.js
 import express from 'express';
 import { createServer } from 'http';
 import { engine } from 'express-handlebars';
@@ -21,7 +20,7 @@ import MessageManager from './dao/managers/MessageManager.js';
 import CartManager from './dao/managers/CartManager.js';
 import ProductManager from './dao/managers/ProductManager.js';
 import passport from './config/passportconfig.js';
-
+import logger from './config/logger.js';
 dotenv.config();
 
 const app = express();
@@ -34,12 +33,12 @@ const productDao = new ProductManager();
 const PORT = process.env.PORT || 8080;
 
 // Conexión a MongoDB
-console.log('Conectando a MongoDB...');
+logger.info('Conectando a MongoDB...');
 mongoose.connect(process.env.MONGODB_URI, {
   serverSelectionTimeoutMS: 30000,
 })
-.then(() => console.log('MongoDB conectado'))
-.catch(err => console.log('Error de conexión a MongoDB:', err));
+.then(() => logger.info('MongoDB conectado'))
+.catch(err => logger.error('Error de conexión a MongoDB:', err));
 
 // Configurar Handlebars como motor de vistas
 app.engine('handlebars', engine({
@@ -80,7 +79,7 @@ app.use('/', requireAuth, chatRoutes);
 
 // Configuración de la conexión Socket.io
 io.on('connection', async (socket) => {
-  console.log('Un usuario se ha conectado:', socket.id);
+  logger.info('Un usuario se ha conectado:', socket.id);
 
   // Emitir los productos existentes al nuevo cliente
   socket.emit('productUpdated', await productDao.getProducts());
@@ -93,19 +92,19 @@ io.on('connection', async (socket) => {
       const newProduct = await productDao.addProduct(product);
       io.emit('productAdded', newProduct);
     } catch (error) {
-      console.log('Error al agregar un nuevo producto:', error);
+      logger.error('Error al agregar un nuevo producto:', error);
     }
   });
 
   socket.on('deleteProduct', async (productId) => {
     try {
       const stringId = String(productId).trim();
-      console.log(`Intentando eliminar el producto con ID: ${stringId}`);
+      logger.info(`Intentando eliminar el producto con ID: ${stringId}`);
       await productDao.deleteProduct(stringId);
       const allProducts = await productDao.getProducts();
       io.emit('productUpdated', allProducts);
     } catch (error) {
-      console.log('Error al eliminar el producto:', error);
+      logger.error('Error al eliminar el producto:', error);
     }
   });
 
@@ -115,7 +114,7 @@ io.on('connection', async (socket) => {
       const newMessage = await messageDao.addMessage(messageData);
       io.emit('messageAdded', newMessage);
     } catch (error) {
-      console.log('Error al agregar un nuevo mensaje:', error);
+      logger.error('Error al agregar un nuevo mensaje:', error);
     }
   });
 
@@ -126,7 +125,7 @@ io.on('connection', async (socket) => {
       const updatedCart = await cartDao.addProductToCart(null, trimmedProductId, quantity);
       io.emit('cartUpdated', updatedCart);
     } catch (error) {
-      console.log('Error al agregar el producto al carrito:', error);
+      logger.error('Error al agregar el producto al carrito:', error);
     }
   });
 
@@ -136,7 +135,7 @@ io.on('connection', async (socket) => {
       const updatedCart = await cartDao.purchaseCart();
       io.emit('cartUpdated', updatedCart);
     } catch (error) {
-      console.log('Error al comprar el carrito:', error);
+      logger.error('Error al comprar el carrito:', error);
     }
   });
 
@@ -147,12 +146,23 @@ io.on('connection', async (socket) => {
       const updatedCart = await cartDao.removeProductFromCart(null, trimmedProductId);
       io.emit('cartUpdated', updatedCart);
     } catch (error) {
-      console.log('Error al eliminar el producto del carrito:', error);
+      logger.error('Error al eliminar el producto del carrito:', error);
     }
   });
 });
 
+// Endpoint para probar los diferentes niveles de log
+app.get('/loggerTest', (req, res) => {
+  logger.debug('Debug log');
+  logger.http('HTTP log');
+  logger.info('Info log');
+  logger.warn('Warning log');
+  logger.error('Error log');
+  logger.log('fatal', 'Fatal log'); 
+  res.send('Logger test endpoint');
+});
+
 // Iniciar el servidor
 httpServer.listen(PORT, () => {
-  console.log(`Servidor en ejecución en http://localhost:${PORT}`);
+  logger.info(`Servidor en ejecución en http://localhost:${PORT}`);
 });

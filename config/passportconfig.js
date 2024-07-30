@@ -1,20 +1,14 @@
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GitHubStrategy } from 'passport-github2';
-import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 import bcrypt from 'bcryptjs';
 import User from '../dao/models/userModel.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const jwtOptions = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.JWT_SECRET
-};
-
 passport.use(new LocalStrategy({
-  usernameField: 'username',
+  usernameField: 'username', 
   passwordField: 'password'
 }, async (username, password, done) => {
   try {
@@ -40,23 +34,10 @@ passport.use(new GitHubStrategy({
   try {
     let user = await User.findOne({ githubId: profile.id });
     if (!user) {
-      user = new User({ email: profile.emails[0].value, githubId: profile.id, first_name: profile.displayName, role: 'user' });
+      user = new User({ username: profile.username, githubId: profile.id, first_name: profile.displayName, role: 'user' });
       await user.save();
     }
     return done(null, user);
-  } catch (err) {
-    return done(err);
-  }
-}));
-
-passport.use(new JwtStrategy(jwtOptions, async (jwtPayload, done) => {
-  try {
-    const user = await User.findById(jwtPayload.id);
-    if (user) {
-      return done(null, user);
-    } else {
-      return done(null, false);
-    }
   } catch (err) {
     return done(err);
   }
