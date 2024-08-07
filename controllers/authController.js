@@ -1,50 +1,50 @@
-import bcrypt from 'bcryptjs';
-import passport from '../config/passportconfig.js';
+import crypto from 'crypto';
 import User from '../dao/models/userModel.js';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-import UserDTO from '../dto/UserDTO.js';
+import sendEmail from '../utils/mailer.js'; 
 
-dotenv.config();
-
-export const register = async (req, res) => {
-  const { first_name, last_name, username, age, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = new User({ first_name, last_name, username, age, password: hashedPassword });
-  await newUser.save();
-  res.redirect('/login');
-};
-
-export const login = (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
-    if (err) {
-      return next(err);
-    }
+export const sendResetPasswordEmail = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.redirect('/login');
+      return res.status(404).json({ message: 'User not found' });
     }
-    req.logIn(user, (err) => {
-      if (err) {
-        return next(err);
-      }
-      return res.redirect('/');
+
+    const token = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000; 
+    await user.save();
+
+    const resetURL = `http://${req.headers.host}/reset/${token}`;
+    await sendEmail(user.email, 'Password Reset', `Click this link to reset your password: ${resetURL}`);
+
+    res.status(200).json({ message: 'Password reset email sent' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error sending reset email' });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
     });
-  })(req, res, next);
-};
 
-export const githubCallback = (req, res) => {
-  const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
-  res.cookie('jwt', token, { httpOnly: true });
-  res.redirect('/');
-};
+    if (!user) {
+      return res.status(400).json({ message: 'Password reset token is invalid or has expired' });
+    }
 
-export const current = (req, res) => {
-  const userDTO = new UserDTO(req.user);
-  res.json({ user: userDTO });
-};
-
-export const logout = (req, res) => {
-  res.clearCookie('jwt');
-  req.logout();
-  res.redirect('/login');
+    if (req.body.password === req.body.confirmPassword) {
+      user.password = await bcrypt.hash(req.body.password, 10);
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpires = undefined;
+      await user.save();
+      res.status(200).json({ message: 'Password reset successful' });
+    } else {
+      res.status(400).json({ message: 'Passwords do not match' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error resetting password' });
+  }
 };

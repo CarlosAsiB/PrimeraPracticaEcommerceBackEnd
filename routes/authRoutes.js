@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import passport from '../config/passportconfig.js';
 import User from '../dao/models/userModel.js';
 import dotenv from 'dotenv';
+import { sendResetPasswordEmail, resetPassword } from '../controllers/authController.js';
 
 dotenv.config();
 
@@ -15,11 +16,16 @@ router.get('/register', (req, res) => {
 
 // Ruta para manejar el registro
 router.post('/register', async (req, res) => {
-  const { first_name, last_name, username, email, age, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = new User({ first_name, last_name, username, email, age, password: hashedPassword });
-  await newUser.save();
-  res.redirect('/login');
+  try {
+    const { first_name, last_name, username, email, age, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ first_name, last_name, username, email, age, password: hashedPassword });
+    await newUser.save();
+    res.redirect('/login');
+  } catch (error) {
+    console.error('Error al registrar el usuario:', error);
+    res.status(500).send('Error al registrar el usuario');
+  }
 });
 
 // Ruta para mostrar el formulario de login
@@ -63,7 +69,7 @@ router.get('/current', (req, res) => {
 });
 
 // Ruta para manejar el logout
-router.post('/logout', (req, res) => {
+router.post('/logout', (req, res, next) => {
   req.logout((err) => {
     if (err) {
       return next(err);
@@ -71,5 +77,11 @@ router.post('/logout', (req, res) => {
     res.redirect('/login');
   });
 });
+
+// Ruta para enviar correo de restablecimiento de contraseña
+router.post('/reset', sendResetPasswordEmail);
+
+// Ruta para restablecer la contraseña
+router.post('/reset/:token', resetPassword);
 
 export default router;

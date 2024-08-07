@@ -1,5 +1,5 @@
 import { createLogger, format, transports } from 'winston';
-import { addColors } from 'winston/lib/winston/config/index.js';
+import { addColors } from 'winston/lib/winston/config/index.js'; 
 
 const { combine, timestamp, printf, colorize } = format;
 
@@ -54,7 +54,7 @@ const productionLogger = () => {
 
 const logger = process.env.NODE_ENV === 'production' ? productionLogger() : developmentLogger();
 
-// Apply custom colors
+
 addColors(customLevels.colors);
 
 export default logger;

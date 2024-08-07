@@ -1,10 +1,12 @@
 import Cart from '../models/cartModel.js';
+import Product from '../models/productModel.js';
+import User from '../models/userModel.js';
 
 class CartManager {
-  async getOrCreateCart() {
-    let cart = await Cart.findOne().populate('products.product');
+  async getOrCreateCart(userId) {
+    let cart = await Cart.findOne({ owner: userId }).populate('products.product');
     if (!cart) {
-      cart = new Cart({ products: [] });
+      cart = new Cart({ owner: userId, products: [] });
       await cart.save();
       cart = await Cart.findById(cart._id).populate('products.product');
     }
@@ -15,13 +17,21 @@ class CartManager {
     return await Cart.findById(cartId).populate('products.product');
   }
 
-  async addProductToCart(cartId, productId, quantity = 1) {
+  async addProductToCart(userId, cartId, productId, quantity = 1) {
+    const user = await User.findById(userId);
+    const product = await Product.findById(productId);
+
+    if (user.role === 'premium' && product.owner.toString() === userId) {
+      throw new Error('Premium users cannot add their own products to the cart');
+    }
+
     let cart;
     if (cartId) {
       cart = await this.getCartById(cartId);
     } else {
-      cart = await this.getOrCreateCart();
+      cart = await this.getOrCreateCart(userId);
     }
+
     const productIndex = cart.products.findIndex(p => p.product._id.toString() === productId);
 
     if (productIndex !== -1) {

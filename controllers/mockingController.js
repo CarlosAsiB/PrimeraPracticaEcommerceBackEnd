@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 
-export const getMockProducts = (req, res) => {
+export const getMockProducts = (res) => {
   const mockProducts = [];
   for (let i = 0; i < 50; i++) {
     mockProducts.push({
@@ -9,7 +9,8 @@ export const getMockProducts = (req, res) => {
       price: faker.commerce.price(),
       thumbnail: faker.image.imageUrl(),
       code: faker.datatype.uuid(),
-      stock: faker.datatype.number({ min: 1, max: 100 })
+      stock: faker.datatype.number({ min: 1, max: 100 }),
+      owner: 'admin'
     });
   }
   res.json(mockProducts);

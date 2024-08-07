@@ -21,6 +21,7 @@ import CartManager from './dao/managers/CartManager.js';
 import ProductManager from './dao/managers/ProductManager.js';
 import passport from './config/passportconfig.js';
 import logger from './config/logger.js';
+
 dotenv.config();
 
 const app = express();
