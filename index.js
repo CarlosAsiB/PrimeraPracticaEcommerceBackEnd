@@ -10,6 +10,7 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import flash from 'connect-flash';
+import swaggerRouter from './config/swagger.js';  // Importa Swagger
 import productRoutes from './routes/productRoutes.js';
 import productViewRoutes from './routes/productViewRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
@@ -77,6 +78,9 @@ app.use('/', requireAuth, productViewRoutes);
 app.use('/api', requireAuth, productRoutes);
 app.use('/', requireAuth, cartRoutes);
 app.use('/', requireAuth, chatRoutes);
+
+// Usar rutas de Swagger
+app.use(swaggerRouter);
 
 // Configuración de la conexión Socket.io
 io.on('connection', async (socket) => {
