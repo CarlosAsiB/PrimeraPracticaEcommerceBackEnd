@@ -10,7 +10,7 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import flash from 'connect-flash';
-import swaggerRouter from './config/swagger.js';  // Importa Swagger
+import swaggerRouter from './config/swagger.js';
 import productRoutes from './routes/productRoutes.js';
 import productViewRoutes from './routes/productViewRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
@@ -171,3 +171,5 @@ app.get('/loggerTest', (req, res) => {
 httpServer.listen(PORT, () => {
   logger.info(`Servidor en ejecución en http://localhost:${PORT}`);
 });
+
+export default app;  // Exporta app para las pruebas
