@@ -25,6 +25,7 @@ import logger from './config/logger.js';
 import userRoutes from './routes/userRoutes.js';
 import './utils/helpers.js';
 
+
 Handlebars.registerHelper('eq', function (a, b) {
   return a === b;
 });
@@ -51,7 +52,10 @@ mongoose.connect(process.env.MONGODB_URI, {
 // Configurar Handlebars como motor de vistas
 app.engine('handlebars', engine({
   defaultLayout: 'main',
-  handlebars: allowInsecurePrototypeAccess(Handlebars)
+  handlebars: allowInsecurePrototypeAccess(Handlebars),
+  helpers: {
+    eq: (a, b) => a === b  
+  }
 }));
 app.set('view engine', 'handlebars');
 app.set('views', './views');
