@@ -1,6 +1,28 @@
 import ProductManager from '../dao/managers/ProductManager.js';
+import User from '../dao/models/userModel.js';
+import nodemailer from 'nodemailer';
 
 const productDao = new ProductManager();
+
+// Función para enviar correo cuando se elimina un producto de un usuario premium
+async function sendProductDeletionEmail(email, productName) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Producto eliminado',
+    text: `Tu producto "${productName}" ha sido eliminado.`,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
 
 export const getHomePage = async (req, res) => {
   try {
@@ -75,10 +97,21 @@ export const updateProduct = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
   try {
+    const product = await productDao.getProductById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+
+    // Verificar si el dueño del producto es premium
+    const owner = await User.findById(product.owner);
+    if (owner && owner.role === 'premium') {
+      await sendProductDeletionEmail(owner.email, product.title);
+    }
+
     await productDao.deleteProduct(req.params.id);
     res.status(204).end();
   } catch (error) {
-    res.status(404).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 

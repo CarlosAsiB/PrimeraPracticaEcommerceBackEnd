@@ -1,0 +1,34 @@
+<h1>Gestión de usuarios</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Correo</th>
+      <th>Rol</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each users}}
+      <tr>
+        <td>{{this.first_name}} {{this.last_name}}</td>
+        <td>{{this.email}}</td>
+        <td>
+          <form action="/api/users/{{this._id}}/role" method="POST">
+            <select name="role" onchange="this.form.submit()">
+              <option value="user" {{#eq this.role 'user'}}selected{{/eq}}>Usuario</option>
+              <option value="admin" {{#eq this.role 'admin'}}selected{{/eq}}>Administrador</option>
+              <option value="premium" {{#eq this.role 'premium'}}selected{{/eq}}>Premium</option>
+            </select>
+          </form>
+        </td>
+        <td>
+          <form action="/api/users/{{this._id}}?_method=DELETE" method="POST">
+            <button type="submit" onclick="return confirm('¿Estás seguro de que deseas eliminar este usuario?')">Eliminar</button>
+          </form>
+        </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

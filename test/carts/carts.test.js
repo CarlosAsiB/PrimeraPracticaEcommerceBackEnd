@@ -2,8 +2,8 @@ import * as chai from 'chai';
 import chaiHttp from 'chai-http';
 import app from '../../index.js';
 
-chai.use(chaiHttp);
-const { expect } = chai;
+chai.use(chaiHttp); 
+const { expect } = chai;  
 
 describe('Carts API', () => {
   it('should create a new cart', (done) => {
@@ -17,8 +17,8 @@ describe('Carts API', () => {
   });
 
   it('should add a product to the cart', (done) => {
-    const cartId = 'id-del-carrito';  
-    const productId = 'id-del-producto';  
+    const cartId = 'id-del-carrito';
+    const productId = 'id-del-producto';
     const quantity = 2;
 
     chai.request(app)

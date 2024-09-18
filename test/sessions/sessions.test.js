@@ -2,8 +2,8 @@ import * as chai from 'chai';
 import chaiHttp from 'chai-http';
 import app from '../../index.js';
 
-chai.use(chaiHttp);
-const expect = chai.expect;
+chai.use(chaiHttp); // Usar chaiHttp
+const { expect } = chai;  // Usar destructuración para obtener expect
 
 describe('Sessions API', () => {
   it('should register a new user', (done) => {
@@ -13,7 +13,7 @@ describe('Sessions API', () => {
       username: 'johndoe',
       email: 'john.doe@example.com',
       age: 30,
-      password: 'password123'
+      password: 'password123',
     };
 
     chai.request(app)
@@ -28,7 +28,7 @@ describe('Sessions API', () => {
   it('should login the user', (done) => {
     const user = {
       username: 'johndoe',
-      password: 'password123'
+      password: 'password123',
     };
 
     chai.request(app)

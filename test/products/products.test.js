@@ -1,9 +1,9 @@
-import * as chai from 'chai';  
+import * as chai from 'chai';  // Importar todo desde chai
 import chaiHttp from 'chai-http';
 import app from '../../index.js';
 
-chai.use(chaiHttp);
-const { expect } = chai;
+chai.use(chaiHttp); // Usar chaiHttp
+const { expect } = chai;  // Usar destructuración para obtener expect
 
 describe('Products API', () => {
   it('should get a list of products', (done) => {
@@ -22,7 +22,7 @@ describe('Products API', () => {
       title: 'Test Product',
       description: 'This is a test product',
       price: 100,
-      stock: 10
+      stock: 10,
     };
 
     chai.request(app)
@@ -35,3 +35,4 @@ describe('Products API', () => {
       });
   });
 });
+``

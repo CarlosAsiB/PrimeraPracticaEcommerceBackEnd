@@ -22,6 +22,12 @@ import CartManager from './dao/managers/CartManager.js';
 import ProductManager from './dao/managers/ProductManager.js';
 import passport from './config/passportconfig.js';
 import logger from './config/logger.js';
+import userRoutes from './routes/userRoutes.js';
+import './utils/helpers.js';
+
+Handlebars.registerHelper('eq', function (a, b) {
+  return a === b;
+});
 
 dotenv.config();
 
@@ -39,8 +45,8 @@ logger.info('Conectando a MongoDB...');
 mongoose.connect(process.env.MONGODB_URI, {
   serverSelectionTimeoutMS: 30000,
 })
-.then(() => logger.info('MongoDB conectado'))
-.catch(err => logger.error('Error de conexión a MongoDB:', err));
+  .then(() => logger.info('MongoDB conectado'))
+  .catch(err => logger.error('Error de conexión a MongoDB:', err));
 
 // Configurar Handlebars como motor de vistas
 app.engine('handlebars', engine({
@@ -58,17 +64,19 @@ app.use(cookieParser());
 
 // Configurar la sesión
 app.use(session({
-  secret: 'your_secret_key',
+  secret: process.env.SESSION_SECRET || 'fallback_secret_key', // Usa la variable de entorno o una clave por defecto
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI })
 }));
 
+// Inicializar Passport y sesiones
 app.use(flash());
-
-// Configurar Passport
 app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.session()); // Asegura que req.isAuthenticated funcione
+
+// Usar rutas de usuarios
+app.use('/api/users', userRoutes);
 
 // Usar rutas de autenticación
 app.use(authRoutes);
